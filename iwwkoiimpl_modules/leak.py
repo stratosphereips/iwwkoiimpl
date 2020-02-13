@@ -36,3 +36,5 @@ class HTTPLeak:
                 print(self.host)
         print("leak:")
         print(self.leaked_data)
+    def csv_out(self):
+        return [ self.src_ip, self.dst_ip, self.dst_port , self.request, self.user_agent, self.host, self.leaked_data ]

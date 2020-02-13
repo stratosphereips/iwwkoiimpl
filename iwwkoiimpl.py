@@ -11,20 +11,25 @@ from iwwkoiimpl_modules import default_parameters
 if __name__ == "__main__":
 
     # ---------- parse arguments ----------
-    pcapname, output_type, context = argument_handler.parse_arguments()
-    if context is not None:
-        default_parameters.context = context
-    # ---------- read the input ----------
-    loaded_pcap = rdpcap(pcapname)
+    try:
+        pcapname, output_type, context = argument_handler.parse_arguments()
 
-    # ---------- transform to a readable format ----------
-    sessions = loaded_pcap.sessions()
+        if context is not None:
+            default_parameters.context = context
+        # ---------- read the input ----------
+        loaded_pcap = rdpcap(pcapname)
+        # ---------- transform to a readable format ----------
+        sessions = loaded_pcap.sessions()
 
-    # apply all the nice modules and detect the leaking data
+        # apply all the nice modules and detect the leaking data
 
-    leaks = []
+        leaks = []
 
-    module_handler.process_sessions(sessions, leaks)
+        module_handler.process_sessions(sessions, leaks)
 
-    # ---------- OUTPUT ----------
-    output.out(leaks, output_type)
+        # ---------- OUTPUT ----------
+        output.out(leaks, output_type)
+    except Exception as e:
+        print(e)
+        raise
+
