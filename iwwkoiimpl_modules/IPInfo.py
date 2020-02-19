@@ -3,7 +3,7 @@ from iwwkoiimpl_modules import default_parameters
 
 class CIPInfo:
     def __init__(self):
-        key = default_parameters.CDefaultParameters.api_key
+        key = default_parameters.Values.api_key
         self.api = Shodan(key)
         self.ip_info = {}
 

@@ -1,59 +1,62 @@
 import re
 
 from iwwkoiimpl_modules import leak
+from iwwkoiimpl_modules import default_parameters
 
 
-def get_leaks_from_packet(packet,context=None) -> [bool,leak.HTTPLeak]:
-    #input: TCP HTTP packet
-
-    if context is None:
-        context = 10
-    #-----------------------------------------------------------------------------
-    # email:
-    # password:
-    # ip address
-    # id:
-    #-----------------------------------------------------------------------------
-
-    templates = ['twitter', 'nokia', 'iphone', 'mail', 'password', 'pwd', 'user',
-                 'wifi', 'chrome', 'access','en','cz','es','lang','com','loc','lat','lon','imei','mn','android','ios','build','time','format','[0-9][0-9]\.']
-
-    packet_string=str(bytes(packet['TCP'].payload).decode('ascii'))
-    regexed_strings = [] # list of strings
-
-
-    for t in templates:
-        x = re.findall('.'*context+t+'.'*context,packet_string,re.IGNORECASE)
-        if len(x) > 0:
-            regexed_strings.extend(x)
-
-    if len(regexed_strings) > 0:
-        user_agent = None
-        host = None
-        request = None
-
-        split_packet = packet_string.split('\r\n')
+class Expressions:
+    templates = {
+        'package_name': ['[a-z]+\.[a-z]+\.[a-z]+[a-z\.]*'],
+        'carrier_info' : ['carrier', 'netoper'],
+        'versions': ['version', 'uiver', 'ver'],
+        'os_info': ['osver', 'android', 'ios', 'bundle', 'sdkver', 'sdk', 'sdktype'],
+        'basic_info': ['nokia', 'iphone', 'api', 'chrome'],
+        'hardware_specifications': ['cpu', 'imei', 'manufacturer', 'model', 'scn', 'scrn', 'orientation', 'screen.size', 'density'],
+        'info_fields': ['[a-z]+=[0-9A-Za-z]+'],
+        'private_information': ['twitter', 'mail', 'wifi', 'access'],
+        'ids_and_access_tokens': ['user', 'id' + '.' * 10, 'gid', 'cookie', 'spid', 'cid', 'muid', 'pid', 'muid', 'aid' ],
+        'language': ['en', 'us', 'cs', 'cz', 'lang', 'es', 'lang'],
+        'password': ['password', 'pwd'],
+        'location': ['loc', 'lat', 'lon', 'geo', 'timezone'],
+        'application_information': ['time', 'format', 'ver', 'version', 'state', 'tracking', 'position', 'appname'],
+        'file_image': [],
+        'file_video': [],
+        'other_data': ['data', '[a-z]+=[a-z]+']
+    }
 
 
-        for http_packet_line in split_packet:
-            if request is None:
-                x = re.findall('POST:|GET:', http_packet_line, re.IGNORECASE)
-                if len(x) > 0:
-                    request = http_packet_line
-                    continue
-            if user_agent is None:
-                x = re.findall('User-Agent:', http_packet_line, re.IGNORECASE)
-                if len(x) > 0:
-                    user_agent = http_packet_line
-                    continue
-            if host is None:
-                x = re.findall('Host:', http_packet_line, re.IGNORECASE)
-                if len(x) > 0:
-                    host = http_packet_line
-                    continue
-            if request is not None and user_agent is not None and host is not None:
-                break
+def get_HTTP_leaks_from_session(packet) -> [bool, leak.HTTPLeak]:
+    characters_around_leak = default_parameters.Values.characters_around_leak
 
-        return True, leak.HTTPLeak(packet['IP'].src, packet['IP'].dst, packet['IP'].dport, request, user_agent, host, regexed_strings)
+    user_agent = None
+    request = None
+    data_found = False
+
+    context = 0
+
+    regexed_leaks = []  # list of strings
+    # todo problem with disected request
+    if packet.haslayer('HTTPRequest'):
+        # method + URL
+        request = packet['HTTPRequest'].Method.decode() + " " + packet['HTTPRequest'].Host.decode() + packet[
+            'HTTPRequest'].Path.decode()
+        user_agent = packet['HTTPRequest'].User_Agent.decode()
+        context = leak.Context.HTTPrequest
+
+    elif packet.haslayer('HTTPResponse'):
+        context = leak.Context.HTTPresponse
+        pass
+
+    packet_string = str(packet['TCP'].payload)
+
+    for category, expressions in Expressions.templates.items():
+        for e in expressions:
+            x = re.findall('.' * characters_around_leak + e + '.' * characters_around_leak, packet_string, re.IGNORECASE)
+            if len(x) > 0:
+                regexed_leaks.append(leak.LeakData(x, context, category))
+                data_found = True
+    if data_found:
+        return True, leak.HTTPLeak(packet['IP'].src, packet['IP'].dst, packet['IP'].dport, request,
+                                   user_agent, regexed_leaks)
     else:
         return False, None

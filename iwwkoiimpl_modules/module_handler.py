@@ -1,15 +1,25 @@
 from iwwkoiimpl_modules import regex
 
 
+
+
 def process_sessions(sessions, leaks):
     for session in sessions:
         for packet in sessions[session]:
             try:
-                if packet['TCP'].payload and packet['IP'].dport == 80:
-                    # ---------- REGEX MODULE ----------
-                    data_found, regexed_info = regex.get_leaks_from_packet(packet)
-                    if data_found:
-                        leaks.append(regexed_info)
+                # ---------- TCP ----------
+                if packet.haslayer('TCP'):
+                # ---------- ---------- HTTP ----------
+                    if packet.haslayer('HTTP'):
+                        ses = sessions[session]
+                        data_found, regexed_info = regex.get_HTTP_leaks_from_session(packet)
+                        if data_found:
+                            leaks.append(regexed_info)
 
+                # ---------- UDP ----------
+                elif packet.haslayer('UDP'):
+                    if packet.haslayer('DNS'):
+                        pass
+            # ---------- ---------- DNS ----------
             except IndexError:
                 continue
