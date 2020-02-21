@@ -6,16 +6,25 @@ from iwwkoiimpl_modules import IPInfo
 
 
 class Context(IntEnum):
-    HTTPrequest = 1
-    HTTPresponse = 2
-    DNSrequest = 3
-    DNSresponse = 4
+    HTTP = 1
+    HTTPRequest = 2
+    HTTPResponse = 3
+    DNS = 4
+    DNSRequest = 5
+    DNSResponse = 6
 
 class LeakData:
-    def __init__(self, raw_leaks: list, context: int, category: str):
+    leaks_sorted_by_priority = {}
+    leaks_sorted_by_category = {}
+    leaked_user_agents = set()
+    leaked_requests = set()
+    leaked_based_on_ner = {}
+
+    def __init__(self, raw_leaks: list, context: int, category: str, priority: float):
         self.raw_leaks = raw_leaks
         self.context = context
         self.category = category
+        self.priority = priority
 
     def print(self):
         # todo nicer
@@ -78,6 +87,25 @@ class HTTPLeak(Leak):
             'dst_port': self.dst_port,
             'request': self.request,
             'user_agent': self.user_agent,
+            'leaked_data': []
+        }
+        for i in self.leaked_data:
+            dict_out['leaked_data'].append(i.json_out())
+
+        return dict_out
+
+class DNSLeak(Leak):
+    def __init__(self, src_ip: str, dst_ip: str, dst_port: str, leaked_data: list):
+        self.src_ip = src_ip
+        self.dst_ip = dst_ip
+        self.dst_port = dst_port
+        self.leaked_data = leaked_data
+
+    def json_out(self):
+        dict_out = {
+            'src_ip': self.src_ip,
+            'dst_ip': self.dst_ip,
+            'dst_port': self.dst_port,
             'leaked_data': []
         }
         for i in self.leaked_data:

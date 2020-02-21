@@ -3,7 +3,7 @@ import argparse
 from iwwkoiimpl_modules import default_parameters
 
 def parse_arguments():
-    parser = argparse.ArgumentParser(description='Get the name of a pcap.')
+    parser = argparse.ArgumentParser(description='Hi there, this is iwwkoiimpl and this is how you use it.')
     parser.add_argument('-p', '--pcap_name', type = str, help = 'path to a pcap file')
     parser.add_argument('-o', '--output', type=str, help = 'json - output to a json file, std - print to standard output ')
     parser.add_argument('-c', '--characters_around_leak', type=int, help = 'how many characters to show before and after the leak found')
