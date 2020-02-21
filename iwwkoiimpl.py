@@ -17,21 +17,7 @@ import urllib.parse
 import re
 
 if __name__ == "__main__":
-    #
-    # input_string = "GET /stripe/image?cs_email=alrogague@gmail.com;nayely.lag@gmail.com&cs_sendid=311303193515&cs_offset=0&cs_stripeid=14298&cs_esp=responsys"
-    # mystring = urllib.parse.unquote_plus(input_string)
-    #
-    # x = re.sub("[^a-zA-Z0-9,\.]", " ", mystring)
-    #
-    # nlp = spacy.load("en_core_web_sm")
-    # doc = nlp(x)
-    # for token in doc:
-    #     print(token)
-    # print("_________________________________________________________")
-    # for ent in doc.ents:
-    #     print(ent.text, ent.label_)
-    #
-    # quit()
+
 
     try:
         # ---------- parse arguments ----------
