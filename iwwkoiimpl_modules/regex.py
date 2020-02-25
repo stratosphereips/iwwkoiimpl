@@ -15,11 +15,11 @@ class Expressions:
     regex_templates = {
         # todo add after context, separate word
         'specific': {
-            'package_name': '[a-z]+\.[a-z]+\.[a-z]+[a-z\.]*',  # in User-Agent only
+            'package_name': [ '[a-z]+\.[a-z]+\.[a-z]+[a-z\.]*' ],  # in User-Agent only # todo two or three letters
         },
         'A_field': {
             'carrier_info': ['carrier', 'netoper'],
-            'credentials': ['password', 'pwd', 'e?mail', 'user', 'access', 'account', 'acc', 'key'],
+                'credentials': ['password', 'pwd', 'e?mail', 'user', 'access', 'account', 'acc', 'key'],
             'location': ['loc', 'location', 'lat?', 'latitude', 'lon?', 'longt?', 'longitude', 'geo', 'location', 'timezone'],
             'ids_and_access_tokens': ['user', 'id', 'gid', 'cookie', 'spid', 'cid', 'muid', 'pid', 'muid', 'aid'],
             'versions': ['version', 'uiver', 'ver'],
@@ -45,6 +45,9 @@ class Expressions:
             # todo
             'other': ['wifi', 'charg.....', ]
         }  # ,
+    }
+
+
         # 'C': {
         #     'info_fields': ['[a-z]+=[0-9A-Za-z]+', '[\'"].{0,1}:.{0,1}[\'"]'],
         #     'application_information': ['time', 'format', 'ver', 'version', 'state', 'tracking', 'position',
@@ -147,36 +150,27 @@ class Expressions:
         #                       "QA", "QAT", "MZ", "MOZ"]
         #
         # }
-    }
 
 
-def get_HTTP_leaks_from_session(packet) -> [bool, leak.HTTPLeak]:
+
+def get_specific_leaks(packet_string) -> [bool, list]:
+    regexed_leaks = []  # list of LeakData
+    for category, expressions in Expressions.regex_templates['specific'].items():
+        for e in expressions:
+            x = re.findall(e, packet_string, re.IGNORECASE)
+            if len(x) > 0:
+                regexed_leaks.append(leak.LeakData(x, 'category', 1.))
+
+    return len(regexed_leaks) > 0, regexed_leaks
+
+def get_leaks(packet) -> [bool, list]:
+    """
+    Extracts leaks using regular expressions.
+    :param packet: scapy.packet
+    :return [bool, leak.HTTPLeak]
+    """
     characters_around_leak = str(default_parameters.Values.characters_around_leak)
-
-    user_agent = None
-    request = None
-    data_found = False
-
-    regexed_leaks = []  # list of strings
-    if packet.haslayer('HTTPRequest'):
-        # method + URL
-        request = packet['HTTPRequest'].Method.decode() + " " + packet['HTTPRequest'].Host.decode() + packet[
-            'HTTPRequest'].Path.decode()
-        user_agent = packet['HTTPRequest'].User_Agent.decode()
-        context = leak.Context.HTTPRequest
-        leak.LeakData.leaked_user_agents.add(user_agent)
-        leak.LeakData.leaked_requests.add(request)
-
-        x = re.findall(Expressions.regex_templates['specific']['package_name'], user_agent, re.IGNORECASE)
-        if len(x) > 0:
-            regexed_leaks.append(leak.LeakData(x, context, 'package_name', 1.))
-            data_found = True
-
-    elif packet.haslayer('HTTPResponse'):
-        context = leak.Context.HTTPResponse
-    else:
-        context = leak.Context.HTTP
-
+    regexed_leaks = []  # list of LeakData
     packet_string = str(packet['TCP'].payload)
 
     for priority, i in Expressions.regex_templates.items():
@@ -196,6 +190,7 @@ def get_HTTP_leaks_from_session(packet) -> [bool, leak.HTTPLeak]:
                         '.{0,' + characters_around_leak + '}[^a-z]' + e + '[^a-z]{1}.{0,' + characters_around_leak + '}',
                         packet_string, re.IGNORECASE)
                 if len(x) > 0:
+                    # todo check if to even do this
                     if priority in leak.LeakData.leaks_sorted_by_priority:
                         leak.LeakData.leaks_sorted_by_priority[priority] = leak.LeakData.leaks_sorted_by_priority[priority] + x
                     else:
@@ -204,14 +199,9 @@ def get_HTTP_leaks_from_session(packet) -> [bool, leak.HTTPLeak]:
                         leak.LeakData.leaks_sorted_by_category[category] = leak.LeakData.leaks_sorted_by_category[category] + x
                     else:
                         leak.LeakData.leaks_sorted_by_category[category] = x
-                    regexed_leaks.append(leak.LeakData(x, context, category, Expressions.importance_evaluations[priority]))
-                    data_found = True
+                    regexed_leaks.append(leak.LeakData(x, category, Expressions.importance_evaluations[priority]))
 
-    if data_found:
-        return True, leak.HTTPLeak(packet['IP'].src, packet['IP'].dst, packet['IP'].dport, request, user_agent,
-                                   regexed_leaks)
-    else:
-        return False, None
+    return len(regexed_leaks) > 0, regexed_leaks
 
 
 def get_DNS_leaks_from_session(packet) -> [bool, leak.DNSLeak]:

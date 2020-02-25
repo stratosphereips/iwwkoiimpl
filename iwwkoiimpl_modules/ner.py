@@ -29,3 +29,13 @@ class NERLeakDetector:
                 leak.LeakData.leaked_based_on_ner[ent.label_] = [ent.text]
 
 
+
+# day1
+# fast regex for a string from the packet blub
+# dont care about context
+# dont delete HTTP code
+# any protocol - use as a blob, use regex
+
+
+
+

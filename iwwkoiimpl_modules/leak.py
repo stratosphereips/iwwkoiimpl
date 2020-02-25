@@ -20,19 +20,17 @@ class LeakData:
     leaked_requests = set()
     leaked_based_on_ner = {}
 
-    def __init__(self, raw_leaks: list, context: int, category: str, priority: float):
+    def __init__(self, raw_leaks: list, category: str, priority: float):
         self.raw_leaks = raw_leaks
-        self.context = context
         self.category = category
         self.priority = priority
 
     def print(self):
         # todo nicer
-        print(self.context, self.category, self.raw_leaks)
-    def json_out(self):
+        print(self.category, self.raw_leaks)
+    def dic_out(self):
         return {
             'category': self.category,
-            'context': self.context,
             'raw_leaks': self.raw_leaks
         }
 
@@ -46,17 +44,18 @@ class Leak:
     def print(self, ip_info: IPInfo.CIPInfo):
         pass
 
-    def json_out(self):
+    def dic_out(self):
         pass
 
 
 class HTTPLeak(Leak):
-    def __init__(self, src_ip: str, dst_ip: str, dst_port: str, request: str, user_agent: str, leaked_data: list):
+    def __init__(self, src_ip: str, dst_ip: str, dst_port: str, request: str, user_agent: str, context : int, leaked_data: list):
         self.src_ip = src_ip
         self.dst_ip = dst_ip
         self.dst_port = dst_port
         self.request = request
         self.user_agent = user_agent
+        self.context = context
         self.leaked_data = leaked_data
 
     def print(self, ip_info: IPInfo.CIPInfo):
@@ -80,7 +79,7 @@ class HTTPLeak(Leak):
             except Exception as e:
                 print(e)
 
-    def json_out(self):
+    def dic_out(self):
         dict_out = {
             'src_ip': self.src_ip,
             'dst_ip': self.dst_ip,
@@ -90,7 +89,7 @@ class HTTPLeak(Leak):
             'leaked_data': []
         }
         for i in self.leaked_data:
-            dict_out['leaked_data'].append(i.json_out())
+            dict_out['leaked_data'].append(i.dic_out())
 
         return dict_out
 
@@ -101,7 +100,7 @@ class DNSLeak(Leak):
         self.dst_port = dst_port
         self.leaked_data = leaked_data
 
-    def json_out(self):
+    def dic_out(self):
         dict_out = {
             'src_ip': self.src_ip,
             'dst_ip': self.dst_ip,
