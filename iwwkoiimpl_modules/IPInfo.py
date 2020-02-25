@@ -1,9 +1,9 @@
 from shodan import Shodan
-from iwwkoiimpl_modules import default_parameters
+from iwwkoiimpl_modules import parameters
 
 class CIPInfo:
     def __init__(self):
-        key = default_parameters.Values.api_key
+        key = parameters.Values.api_key
         self.api = Shodan(key)
         self.ip_info = {}
 

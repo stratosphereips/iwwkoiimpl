@@ -17,19 +17,18 @@ def unique(input_dictionary : dict):
         unique_dictionary[key]=unique_list
     return unique_dictionary
 
-def out(leaks: list, output_type: str, output_filename=None, display_ip_info=True):
-    a = leak.LeakData.leaked_based_on_ner
-    if output_type == 'json':
-        if output_filename is None:
-            output_filename = 'leaks_from_' + strftime("%Y-%m-%d_%H:%M:%S", gmtime())
-        json_out(leaks, output_filename)
-    if output_type == 'std':
-        std_out(leaks, display_ip_info)
+# def out(leaks: list, output_type: str, output_filename=None, display_ip_info=True):
+#     a = leak.LeakData.leaked_based_on_ner
+#     if output_type == 'json':
+#         if output_filename is None:
+#             output_filename = 'leaks_from_' + strftime("%Y-%m-%d_%H:%M:%S", gmtime())
+#         json_out(leaks, output_filename)
+#     if output_type == 'std':
+#         std_out(leaks, display_ip_info)
 
 
-def json_out(output_filename):
+def json_out(output_filename, leaks: list):
     out_dict = {}
-    leaks = leak_handler.LeakHandler.leaks
     for i in range(len(leaks)):
         out_dict[str(i)] = leaks[i].dic_out()
 

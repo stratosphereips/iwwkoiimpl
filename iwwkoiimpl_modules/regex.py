@@ -1,7 +1,7 @@
 import re
 
 from iwwkoiimpl_modules import leak
-from iwwkoiimpl_modules import default_parameters
+from iwwkoiimpl_modules import parameters
 
 
 class Expressions:
@@ -15,7 +15,7 @@ class Expressions:
     regex_templates = {
         # todo add after context, separate word
         'specific': {
-            'package_name': [ '[a-z]+\.[a-z]+\.[a-z]+[a-z\.]*' ],  # in User-Agent only # todo two or three letters
+            'package_name_in_user_agent': [ '[a-z]+\.[a-z]+\.[a-z]+[a-z\.]*' ],  # in User-Agent only # todo two or three letters
         },
         'A_field': {
             'carrier_info': ['carrier', 'netoper'],
@@ -153,23 +153,21 @@ class Expressions:
 
 
 
-def get_specific_leaks(packet_string) -> [bool, list]:
+def get_specific_leaks(packet_string, category :str) -> [bool, list]:
     regexed_leaks = []  # list of LeakData
-    for category, expressions in Expressions.regex_templates['specific'].items():
-        for e in expressions:
-            x = re.findall(e, packet_string, re.IGNORECASE)
-            if len(x) > 0:
-                regexed_leaks.append(leak.LeakData(x, 'category', 1.))
-
+    for e in Expressions.regex_templates['specific'][category]:
+        x = re.findall(e, packet_string, re.IGNORECASE)
+        if len(x) > 0:
+            regexed_leaks.append(leak.LeakData(x,category , 1.))
     return len(regexed_leaks) > 0, regexed_leaks
 
 def get_leaks(packet) -> [bool, list]:
     """
     Extracts leaks using regular expressions.
     :param packet: scapy.packet
-    :return [bool, leak.HTTPLeak]
+    :return [bool, leak.Leak]
     """
-    characters_around_leak = str(default_parameters.Values.characters_around_leak)
+    characters_around_leak = str(parameters.Values.characters_around_leak)
     regexed_leaks = []  # list of LeakData
     packet_string = str(packet['TCP'].payload)
 
@@ -204,50 +202,50 @@ def get_leaks(packet) -> [bool, list]:
     return len(regexed_leaks) > 0, regexed_leaks
 
 
-def get_DNS_leaks_from_session(packet) -> [bool, leak.DNSLeak]:
-    characters_around_leak = str(default_parameters.Values.characters_around_leak)
-    data_found = False
-    regexed_leaks = []  # list of strings
-    # if packet.haslayer('DNSRequest'):
-    #     context = leak.Context.DNSRequest
-    # elif packet.haslayer('DNSResponse'):
-    #     context = leak.Context.DNSResponse
-    # else:
-    #     context = leak.Context.DNS
-
-    # packet_string = str(packet['UDP'].payload)
-    context = leak.Context.DNS
-    packet_string = packet
-
-    for priority, i in Expressions.regex_templates.items():
-        for category, expressions in i.items():
-            if priority == 'specific':
-                continue
-            for e in expressions:
-                x = ''
-                if priority == 'A_field':
-                    x = re.findall(e + '.?[=:/].{0,' + characters_around_leak + '}', packet_string, # '[^a-z_]' +
-                                   re.IGNORECASE)
-                elif priority == 'A_match':
-                    x = re.findall(e, packet_string,re.IGNORECASE)
-
-                elif priority == 'B' or priority == 'C':
-                    x = re.findall(
-                        '.{0,' + characters_around_leak + '}[^a-z]' + e + '[^a-z]{1}.{0,' + characters_around_leak + '}',
-                        packet_string, re.IGNORECASE)
-                if len(x) > 0:
-                    if priority in leak.LeakData.leaks_sorted_by_priority:
-                        leak.LeakData.leaks_sorted_by_priority[priority] = leak.LeakData.leaks_sorted_by_priority[priority] + x
-                    else:
-                        leak.LeakData.leaks_sorted_by_priority[priority] = x
-                    if category in leak.LeakData.leaks_sorted_by_category:
-                        leak.LeakData.leaks_sorted_by_category[category] = leak.LeakData.leaks_sorted_by_category[category] + x
-                    else:
-                        leak.LeakData.leaks_sorted_by_category[category] = x
-                    regexed_leaks.append(leak.LeakData(x, context, category, Expressions.importance_evaluations[priority]))
-                    data_found = True
-
-    if data_found:
-        return True, leak.DNSLeak('src','dst', '53', regexed_leaks)
-    else:
-        return False, None
+# def get_DNS_leaks_from_session(packet) -> [bool, leak.DNSLeak]:
+#     characters_around_leak = str(parameters.Values.characters_around_leak)
+#     data_found = False
+#     regexed_leaks = []  # list of strings
+#     # if packet.haslayer('DNSRequest'):
+#     #     context = leak.Context.DNSRequest
+#     # elif packet.haslayer('DNSResponse'):
+#     #     context = leak.Context.DNSResponse
+#     # else:
+#     #     context = leak.Context.DNS
+#
+#     # packet_string = str(packet['UDP'].payload)
+#     context = leak.Context.DNS
+#     packet_string = packet
+#
+#     for priority, i in Expressions.regex_templates.items():
+#         for category, expressions in i.items():
+#             if priority == 'specific':
+#                 continue
+#             for e in expressions:
+#                 x = ''
+#                 if priority == 'A_field':
+#                     x = re.findall(e + '.?[=:/].{0,' + characters_around_leak + '}', packet_string, # '[^a-z_]' +
+#                                    re.IGNORECASE)
+#                 elif priority == 'A_match':
+#                     x = re.findall(e, packet_string,re.IGNORECASE)
+#
+#                 elif priority == 'B' or priority == 'C':
+#                     x = re.findall(
+#                         '.{0,' + characters_around_leak + '}[^a-z]' + e + '[^a-z]{1}.{0,' + characters_around_leak + '}',
+#                         packet_string, re.IGNORECASE)
+#                 if len(x) > 0:
+#                     if priority in leak.LeakData.leaks_sorted_by_priority:
+#                         leak.LeakData.leaks_sorted_by_priority[priority] = leak.LeakData.leaks_sorted_by_priority[priority] + x
+#                     else:
+#                         leak.LeakData.leaks_sorted_by_priority[priority] = x
+#                     if category in leak.LeakData.leaks_sorted_by_category:
+#                         leak.LeakData.leaks_sorted_by_category[category] = leak.LeakData.leaks_sorted_by_category[category] + x
+#                     else:
+#                         leak.LeakData.leaks_sorted_by_category[category] = x
+#                     regexed_leaks.append(leak.LeakData(x, context, category, Expressions.importance_evaluations[priority]))
+#                     data_found = True
+#
+#     if data_found:
+#         return True, leak.DNSLeak('src','dst', '53', regexed_leaks)
+#     else:
+#         return False, None

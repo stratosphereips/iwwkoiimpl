@@ -1,7 +1,7 @@
 import os
 from enum import IntEnum
 
-from iwwkoiimpl_modules import default_parameters
+from iwwkoiimpl_modules import parameters
 from iwwkoiimpl_modules import IPInfo
 
 
@@ -39,7 +39,7 @@ class Leak:
     try:
         terminal_width = os.get_terminal_size().columns
     except OSError:
-        terminal_width = default_parameters.Values.terminal_width
+        terminal_width = parameters.Values.terminal_width
 
     def print(self, ip_info: IPInfo.CIPInfo):
         pass
