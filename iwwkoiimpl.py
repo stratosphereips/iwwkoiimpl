@@ -27,7 +27,7 @@ if __name__ == "__main__":
         # ---------- parse arguments ----------
         argument_handler.parse_arguments()
 
-        output_filename = 'leaks_from_' + Values.pcap_name.rsplit('.',1)[0].rsplit('/',1)[-1] + '.json'
+        output_filename = 'leaks_from_' + Values.pcap_name.rsplit('.',1)[0].rsplit('/',1)[-1]
 
         # ---------- process the input ----------
         print("processing pcap... " + Values.pcap_name)
@@ -41,5 +41,6 @@ if __name__ == "__main__":
 
 
     except Exception as e:
+        # todo delete
         print(e)
         raise

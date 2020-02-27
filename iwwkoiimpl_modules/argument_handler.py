@@ -15,9 +15,9 @@ def parse_arguments():
     args = parser.parse_args()
     if args.pcap_name is None:
         parser.print_usage()
-        # todo error and usage
-        Values.pcap_name=''
-        # raise Exception("argument error")
+        raise Exception("argument error")
+    else:
+        Values.pcap_name = args.pcap_name
 
     if args.output is not None and args.output != 'std' and args.output != 'json':
         print("Wrong output format, setting to default:", Values.output_type)

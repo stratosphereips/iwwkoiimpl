@@ -5,9 +5,20 @@ from iwwkoiimpl_modules import output
 
 class LeakHandler:
     """
+    Initializes necessary things for the detection modules.
     Stores detected leaked data.
     """
     leaks = []
+
+    # todo see if to use these
+    leaks_sorted_by_priority = {}
+    leaks_sorted_by_category = {}
+    leaks_user_agents = set()
+    leaks_requests = set()
+    leaks_based_on_ner = {}
+
+    ner_detector = ner.NERLeakDetector()
+
 
 def out(output_type : str, output_file_name=None):
     """
@@ -47,7 +58,6 @@ def find_leaks(packet):
                     # todo find all specific things for this one
                     data_found, user_agent_regexed_leaks = regex.get_specific_leaks(user_agent, 'package_name_in_user_agent')
 
-
                 elif packet.haslayer('HTTPResponse'):
                     context = leak.Context.HTTPResponse
                 else:
@@ -55,16 +65,10 @@ def find_leaks(packet):
 
                 specific_regexed_leaks = user_agent_regexed_leaks # + other specific regexed leaks
 
-                # todo ner_detector
-                # def process_sessions(sessions, leaks):
-                #     # initialize
-                #     ner_detector = ner.NERLeakDetector()
-                #     dns_string = ''
-                #
-                #     for session in sessions:
-                #         for packet in sessions[session]:
-                # ner_detector.get_leaks_from_session(packet, 'TCP')
-                data_found, packet_regexed_leaks = regex.get_leaks(packet)
+                packet_string = str(packet['TCP'].payload)
+                LeakHandler.ner_detector.get_leaks(packet_string, LeakHandler.leaks_based_on_ner)
+                # data_found, packet_ner_leaks = LeakHandler.ner_detector.get_leaks(packet_string, LeakHandler.leaks_based_on_ner)
+                data_found, packet_regexed_leaks = regex.get_leaks(packet_string)
                 regexed_leaks = specific_regexed_leaks + packet_regexed_leaks # + packet_ner_leaks
                 if data_found:
                     LeakHandler.leaks.append(leak.HTTPLeak(packet['IP'].src, packet['IP'].dst, packet['IP'].dport, request, user_agent, context, regexed_leaks))
@@ -74,7 +78,9 @@ def find_leaks(packet):
         elif packet.haslayer('UDP'):
             # ---------- ---------- DNS ----------
             if packet.haslayer('DNS') and packet['IP'].dport == 53:
-                data_found, packet_regexed_leaks = regex.get_leaks(packet)
+                LeakHandler.ner_detector.get_leaks(str(packet['UDP'].payload), LeakHandler.leaks_based_on_ner)
+                # data_found, packet_ner_leaks = LeakHandler.ner_detector.get_leaks(str(packet['UDP'].payload), LeakHandler.leaks_based_on_ner)
+                data_found, packet_regexed_leaks = regex.get_leaks(str(packet['UDP'].payload))
                 regexed_leaks = packet_regexed_leaks  # + packet_ner_leaks
                 if data_found:
                     LeakHandler.leaks.append(leak.DNSLeak(packet['IP'].src, packet['IP'].dst, packet['IP'].dport, regexed_leaks))
