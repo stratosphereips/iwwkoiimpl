@@ -4,7 +4,7 @@ class Values:
     output_type = 'json'
     terminal_width = 10
     pcap_name = ''
-    filter = 'tcp dst port 80 or udp dst port 53'
+    filter = 'tcp dst port 80'# or udp dst port 53'
 
 
 class RegularExpressions:
