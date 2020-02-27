@@ -5,6 +5,7 @@
 pcaps/
 screenshots/
 learning.py
+model/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
