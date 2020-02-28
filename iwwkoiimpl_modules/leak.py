@@ -1,5 +1,4 @@
 import os
-from enum import IntEnum
 
 from iwwkoiimpl_modules import parameters
 from iwwkoiimpl_modules.ip_info import IPInfo
@@ -15,6 +14,7 @@ class Context:
     DNS = 'DNS'
     DNSRequest = 'DNSRequest'
     DNSResponse = 'DNSResponse'
+
 
 class LeakData:
     """
@@ -58,12 +58,13 @@ class HTTPLeak(Leak):
     """
     Child class of Leak that stores additional information specific for the HTTP protocol.
     """
-    def __init__(self, src_ip: str, dst_ip: str, dst_port: str, request: str, user_agent: str, context : int, leaked_data: list):
+    def __init__(self, src_ip: str, dst_ip: str, dst_port: str, timestamp: str, request: str, user_agent: str, context : int, leaked_data: list):
         """
         Constructor stores information about the packet that carried leaked data.
         :param src_ip: str
         :param dst_ip: str
         :param dst_port: str
+        :param timestamp: str
         :param request: str The whole request
         :param user_agent: The entire User-Agent
         :param context: str String specifying the context of the leak, see the Context class.
@@ -72,6 +73,7 @@ class HTTPLeak(Leak):
         self.src_ip = src_ip
         self.dst_ip = dst_ip
         self.dst_port = dst_port
+        self.timestamp = timestamp
         self.request = request
         self.user_agent = user_agent
         self.context = context
@@ -115,6 +117,7 @@ class HTTPLeak(Leak):
             'src_ip': self.src_ip,
             'dst_ip': self.dst_ip,
             'dst_port': self.dst_port,
+            'timestamp': self.timestamp,
             'request': self.request,
             'user_agent': self.user_agent,
             'context': self.context,
@@ -129,18 +132,43 @@ class DNSLeak(Leak):
     """
     Child class of Leak class that stores additional information specific for the DNS protocol.
     """
-    def __init__(self, src_ip: str, dst_ip: str, dst_port: str, leaked_data: list):
+    def __init__(self, src_ip: str, dst_ip: str, dst_port: str, timestamp: str, leaked_data: list):
         """
         Constructor stores information about the DNS packet that carried leaked data.
         :param src_ip: str
         :param dst_ip: str
         :param dst_port: str
+        :param timestamp: str
         :param leaked_data: list of of LeakData objects
         """
         self.src_ip = src_ip
         self.dst_ip = dst_ip
         self.dst_port = dst_port
+        self.timestamp = timestamp
         self.leaked_data = leaked_data
+
+
+    def print(self):
+        """
+        Prints information about the leak to the standard output.
+        :return: None
+        """
+        try:
+            terminal_width = os.get_terminal_size().columns
+        except OSError:
+            terminal_width = parameters.Values.terminal_width
+
+        print('-' * terminal_width)
+        print("From {} ----info leaking to ----> {}:{}:".format(self.src_ip, self.dst_ip, self.dst_port))
+
+        print("leak:")
+        for leak in self.leaked_data:
+            leak.print()
+
+        country_name, org, isp, ports = IPInfo.get_ip_info(self.dst_ip)
+        if country_name is not None:
+            print("Country: {}, Organization: {}, ISP: {}, Open ports:{}".format(country_name, org, isp, ports))
+
 
     def dic_out(self):
         """
@@ -151,6 +179,7 @@ class DNSLeak(Leak):
             'src_ip': self.src_ip,
             'dst_ip': self.dst_ip,
             'dst_port': self.dst_port,
+            'timestamp': self.timestamp,
             'leaked_data': []
         }
         for i in self.leaked_data:
