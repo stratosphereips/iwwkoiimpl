@@ -1,4 +1,4 @@
-from shodan import Shodan
+# from shodan import Shodan
 from iwwkoiimpl_modules import parameters
 
 
@@ -7,13 +7,14 @@ from iwwkoiimpl_modules import parameters
 class IPInfo:
     """
     Stores destination IPs and gathers information about them.
+    Not being used right now!!
     """
     def __init__(self):
         """
         Initializes the api and a dictionary that stores IPs and their info.
         """
         key = parameters.Values.api_key
-        self.api = Shodan(key)
+        # self.api = Shodan(key)
         self.ip_info = {}
 
     def get_ip_info(self, ip):
