@@ -1,4 +1,5 @@
 python==3.8.1
 scapy==2.4.3
 spaCy==2.2.3
+
  
