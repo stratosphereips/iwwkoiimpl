@@ -6,12 +6,6 @@ from iwwkoiimpl_modules.parameters import Values
 
 
 def packet_process(packet):
-    #
-    # if packet.haslayer('TCP'):
-    #     if len(packet['TCP'].payload) > 0:
-    #         print('TCP\n', packet['TCP'].payload)
-    # if packet.haslayer('HTTP'):
-    #     print(packet['HTTP'].payload)
     leak_handler.find_leaks(packet)
 
 
@@ -36,6 +30,6 @@ if __name__ == "__main__":
 
 
     except Exception as e:
-        # todo check it there are some exceptions that I wanna handle better
+        # todo handle better
         print(e)
         raise

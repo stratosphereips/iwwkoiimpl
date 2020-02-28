@@ -19,9 +19,8 @@ class RegularExpressions:
     }
 
     regex_templates = {
-        # todo add after context, separate word
         'specific': {
-            'package_name_in_user_agent': [ '[a-z]+\.[a-z]+\.[a-z]+[a-z\.]*' ],  # in User-Agent only # todo two or three letters
+            'package_name_in_user_agent': [ '[a-z]+\.[a-z]+\.[a-z]+[a-z\.]*' ],  # in User-Agent only
         },
         'A_field': {
             'carrier_info': ['carrier', 'netoper'],
@@ -42,13 +41,13 @@ class RegularExpressions:
         'B': {
             'hardware': ['iphone', 'nokia'],
             'software': ['android', 'ios', 'chrome'],
-            # todo names of applications
+            # todo add names of applications
             'application_names': ['twitter', 'facebook', 'whatsapp', 'signal', 'gmail', 'google', 'apple'],
-            # todo names of manufacturers
+            # todo add names of manufacturers
             'manufacturer_names': ['apple', 'nokia', 'xiaomi', 'siemens'],
-            # todo names of operating systems
+            # todo add names of operating systems
             'operating_systems': ['ios', 'android'],
-            # todo
+            # todo add other keywords
             'other': ['wifi', 'charg.....', ]
         }  # ,
     }

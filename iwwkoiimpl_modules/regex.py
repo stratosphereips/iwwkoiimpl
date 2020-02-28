@@ -40,15 +40,11 @@ def get_leaks(packet_string: str) -> [bool, list]:
                 if priority == 'A_field':
                     for i in re.finditer(e + '.?[=:/].{0,' + characters_around_leak + '}', packet_string, re.IGNORECASE):
                         x.append([str(i.group()), int(i.start()), int(i.end())])
-                        # print(type(i.group()))
-                    # x = re.findall(e + '.?[=:/].{0,' + characters_around_leak + '}', packet_string, re.IGNORECASE)
                 elif priority == 'A_match':
-                    # x = re.findall(e, packet_string, re.IGNORECASE)
                     for i in re.finditer(e, packet_string, re.IGNORECASE):
                         x.append([str(i.group()), int(i.start()), int(i.end())])
 
                 elif priority == 'B' or priority == 'C':
-                    # x = re.findall('.{0,' + characters_around_leak + '}[^a-z]' + e + '[^a-z]{1}.{0,' + characters_around_leak + '}', packet_string, re.IGNORECASE)
                     for i in re.finditer('.{0,' + characters_around_leak + '}[^a-z]' + e + '[^a-z]{1}.{0,' + characters_around_leak + '}', packet_string, re.IGNORECASE):
                         x.append([str(i.group()), int(i.start()), int(i.end())])
                 if len(x) > 0:

@@ -56,7 +56,7 @@ def std_out(leaks: list, display_ip_info: bool):
     :param display_ip_info: bool true if it should print the IP info to std
     :return:
     """
-    # todo nicer?
+    # todo nicer
     out_dict = {}
     for i in range(len(leaks)):
         out_dict[str(i)] = leaks[i].json_out()
