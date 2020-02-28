@@ -1,23 +1,17 @@
 from scapy.all import *
 
-# from progress.bar import Bar
-# from colorama import Fore, Back, Style
-
 from iwwkoiimpl_modules import leak_handler
-from iwwkoiimpl_modules import output
 from iwwkoiimpl_modules import argument_handler
 from iwwkoiimpl_modules.parameters import Values
-import re
-import os
-
-from scapy.layers.http import HTTPRequest
-
-import spacy
-import urllib.parse
-import re
 
 
 def packet_process(packet):
+    #
+    # if packet.haslayer('TCP'):
+    #     if len(packet['TCP'].payload) > 0:
+    #         print('TCP\n', packet['TCP'].payload)
+    # if packet.haslayer('HTTP'):
+    #     print(packet['HTTP'].payload)
     leak_handler.find_leaks(packet)
 
 
@@ -32,7 +26,8 @@ if __name__ == "__main__":
         # ---------- process the input ----------
         print("processing pcap... " + Values.pcap_name)
 
-        sniff(filter=Values.filter, offline=Values.pcap_name, prn=packet_process)
+        load_layer('http')
+        sniff(filter=Values.filter, offline=Values.pcap_name, prn=packet_process, session=TCPSession)
         print("processing done... ")
 
         # ---------- save leaks to a file ----------
@@ -41,6 +36,6 @@ if __name__ == "__main__":
 
 
     except Exception as e:
-        # todo delete
+        # todo check it there are some exceptions that I wanna handle better
         print(e)
         raise

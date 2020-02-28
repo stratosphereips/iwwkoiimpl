@@ -15,7 +15,9 @@ def parse_arguments():
     args = parser.parse_args()
     if args.pcap_name is None:
         parser.print_usage()
-        raise Exception("argument error")
+        # todo delete
+        # raise Exception("argument error")
+        Values.pcap_name = 'pcaps/20190228001414-sparkle_hurt_10.8.0.149_03040000.pcap'
     else:
         Values.pcap_name = args.pcap_name
 

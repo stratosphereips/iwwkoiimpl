@@ -1,10 +1,7 @@
-import csv
-from time import gmtime, strftime
+import os
 import json
 
-from iwwkoiimpl_modules import leak
-from iwwkoiimpl_modules import ip_info
-from iwwkoiimpl_modules import leak_handler
+from iwwkoiimpl_modules.leak_store import LeakStore
 
 
 def unique(input_dictionary : dict):
@@ -17,9 +14,9 @@ def unique(input_dictionary : dict):
     for key, item in input_dictionary.items():
         unique_list = []
         for x in item:
-            if x not in unique_list:
-                unique_list.append(x)
-        unique_dictionary[key]= unique_list
+            if x[0] not in unique_list:
+                unique_list.append(x[0])
+        unique_dictionary[key] = unique_list
     return unique_dictionary
 
 def json_out(output_filename : str, leaks: list):
@@ -29,24 +26,25 @@ def json_out(output_filename : str, leaks: list):
     :param leaks: list of Leak class objects
     :return: None
     """
-    # todo modify based on the leak_handler
+
     out_dict = {}
     for i in range(len(leaks)):
         out_dict[str(i)] = leaks[i].dic_out()
 
     try:
-        with open(output_filename + '.json', 'w') as json_file:
+        os.mkdir(output_filename)
+        with open(output_filename + '/leaks' + '.json', 'w') as json_file:
             json.dump(out_dict, json_file)
-        # with open(output_filename+"_priority_sorted" + '.json', 'w') as json_file:
-        #     json.dump(unique(leak.LeakData.leaks_sorted_by_priority), json_file)
-        # with open(output_filename+"_category_sorted" + '.json', 'w') as json_file:
-        #     json.dump(unique(leak.LeakData.leaks_sorted_by_category), json_file)
-        # with open(output_filename+"_user_agents" + '.json', 'w') as json_file:
-        #     json.dump({"user_agents" : list(sorted(leak.LeakData.leaked_user_agents))}, json_file)
-        # with open(output_filename+"_requests" + '.json', 'w') as json_file:
-        #     json.dump({"user_agents" : list(sorted(leak.LeakData.leaked_requests))} , json_file)
-        with open(output_filename + "_ner" + '.json', 'w') as json_file:
-            json.dump(unique(leak_handler.LeakHandler.leaks_based_on_ner), json_file)
+        with open(output_filename+ '/leaks'+"_priority_sorted" + '.json', 'w') as json_file:
+            json.dump(unique(LeakStore.leaks_sorted_by_priority), json_file)
+        with open(output_filename+ '/leaks'+"_category_sorted" + '.json', 'w') as json_file:
+            json.dump(unique(LeakStore.leaks_sorted_by_category), json_file)
+        with open(output_filename+ '/leaks'+"_user_agents" + '.json', 'w') as json_file:
+            json.dump({"user_agents" : list(sorted(LeakStore.leaked_user_agents))}, json_file)
+        with open(output_filename+ '/leaks'+"_requests" + '.json', 'w') as json_file:
+            json.dump({"user_agents" : list(sorted(LeakStore.leaked_requests))} , json_file)
+        with open(output_filename + '/leaks'+ "_ner" + '.json', 'w') as json_file:
+            json.dump(LeakStore.leaks_based_on_ner, json_file)
     except IOError as e:
         print("I/O error")
 
